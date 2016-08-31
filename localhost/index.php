@@ -6,27 +6,57 @@
 </head>
 <body>
 <?php
-/*file_exists($fileName);
-filesize($fileName);
-fileatime($fileName);
-is_readable($fileName);
-is_writable($fileName);
-$f = fopen($path, $mode); // create, open file; 'r' => read, begin; 'r+' => read, write, begin; 'w' = > write, begin; 'w+' => rewrite; 'a' => write, append; 'a+' read, write, append;
-fclose($f); // close file
-fgetss($f); // delete tags
-feof($f);
-fgets(); get string*/
-echo "<ul style='list-style: none; margin: 0;>";
-$arr = file('menu.txt');
-foreach($arr as $m) {
-$menu = unserialize($m);
-    if($menu['active'] == 'on') {
-        $myLink = $menu['link'];
-        $myName = $menu['name'];
-        echo "<li style='display: inline; margin: 10px;'><a href='$myLink'>$myName</a></li>";
-    }
+$menu = array(
+    array("id" => 1, "url" => "/index.php", "name" => "Home"),
+    array("id" => 2, "url" => "/contact.php", "name" => "Contact"),
+    array("id" => 3, "url" => "/about.php", "name" => "About"),
+    array("id" => 4, "url" => "/log.php", "name" => "Log")
+);
+
+$pageId = isset($_GET["id"]) ? $_GET["id"] : 1;
+
+foreach ($menu as $m) {
+    if ($m['id'] == $pageId)
+        $path = $m['url'];
 }
-echo "</ul>";
+
+if ($pageId == 1):
+    echo "Вы на странице 'Index'";
+else:
+    include($path);
+endif;
+
+?>
+<ul class="menu">
+    <?php
+    foreach ($menu as $m): ?>
+        <li class="menu-item">
+            <a href="/index.php?id=<?= $m['id'] ?>"><?= $m['name'] ?></a>
+        </li>
+    <?php
+    endforeach;
+    ?>
+</ul>
+<?php
+if($_SERVER['REQUEST_METHOD'] == 'GET')
+{
+    $dt = time();
+    $page =  $_SERVER['REQUEST_URI'];
+    if($page == "/")
+        $page = 'mysite.local';
+    elseif($page == "")
+        $page = "Неизвесный ресурс";
+    $index = strpos($_SERVER['HTTP_REFERER'], "localhost");
+    $ref = substr($_SERVER['HTTP_REFERER'], $index + strlen("localhost"));
+    if($ref == "/")
+        $ref = 'mysite.local';
+    elseif($ref == "")
+        $ref = "Неизвесный ресурс";
+    $str_log = $dt . "|" . $page . "|" . $ref . "\n";
+    $file = fopen('Log/log.txt', 'a');
+    fwrite($file, $str_log);
+    fclose($file);
+}
 ?>
 </body>
 </html>
